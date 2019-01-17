@@ -1,0 +1,307 @@
+.ox-tableau
+{
+	background-color: #deedf5;
+	border: 1px solid #c8d3da;
+	color: gray;
+	overflow: hidden;
+	user-select: none;
+	-moz-user-select: none;
+}
+
+.ox-enteteTableau
+{
+	overflow: auto;
+	border-bottom: 1px solid #3f70b9;
+	cursor: default;
+}
+
+.ox-enteteTab
+{
+	height: 25px;
+	float: left;
+	overflow: hidden;
+	line-height: 25px;
+	text-indent: 5px;
+	color: white;
+	background-color: #449bca;
+	border-top: 1px solid #3f70b9;
+}
+
+.ox-enteteTab:not(:last-child)
+{
+	border-right: 1px solid #3f70b9;
+}
+
+.ox-ligne
+{
+	width: 100000%;
+	clear: both;
+	overflow: hidden;
+}
+
+.ox-colonne
+{
+	float: left;
+	overflow: hidden;
+	text-indent: 10px;
+	box-shadow: -10px 0px 10px -10px #ddd inset;
+}
+
+.ox-enteteGroupe .ox-colonne
+{
+	display: none;
+}
+
+.ox-enteteGroupe .ox-nomGroupe
+{
+	cursor: pointer;
+	background-color: #e0e0e0;
+}
+
+.ox-enteteGroupe .ox-nonEnteteGroupe
+{
+	font-weight: bold;
+}
+
+.ox-enteteGroupe.ox-groupeNiveau1 .ox-nomGroupe
+{
+	margin-left: 20px;
+}
+
+.ox-enteteGroupe.ox-groupeNiveau2 .ox-nomGroupe
+{
+	margin-left: 40px;
+}
+
+.ox-enteteGroupe.ox-groupeNiveau3 .ox-nomGroupe
+{
+	margin-left: 60px;
+}
+
+.ox-enteteGroupe.ox-groupeNiveau4 .ox-nomGroupe
+{
+	margin-left: 80px;
+}
+
+.ox-infoOuvertureGroupe
+{
+	padding-left: 20px;
+	transition: transform 0.2s;
+	width: 20px;
+	float: left;
+}
+
+.ox-infoOuvertureGroupe.ox-deploye
+{
+	transform: rotate(90deg);
+}
+
+.ox-enteteGroupe .ox-infoOuvertureGroupe:before
+{
+	font-family: 'FontAwesome' !important;
+	content: "\f0da";
+}
+
+.ox-enteteGroupe .ox-nbEltGroupe
+{
+	border: 1px solid #5d5c5c;
+	border-radius: 5px;
+	margin-left: 10px;
+	padding: 0px 5px;
+	color: #5d5c5c;
+}
+
+.ox-ligne:not(:last-child) .ox-colonne
+{
+	border-bottom: 1px solid #e5e5e6;
+}
+
+.ox-colonne:not(:last-child)
+{
+	border-right: 1px solid #e5e5e6;
+}
+
+.ox-ligne:not(".ox-nonSelectionnable"):hover
+{
+	background-color: #92c8dd;
+}
+
+.ox-gauche
+{
+	text-align: left;
+}
+
+.ox-centrer
+{
+	text-align: center;
+}
+
+.ox-droite
+{
+	text-align: right;
+}
+
+.ox-selectionne
+{
+	background-color: #1ca8dd;
+	color: #eeeeee;
+}
+
+.ox-redimensionneur
+{
+	cursor: col-resize;
+	height: 100%;
+	margin-top: -20px;
+	left: -5px;
+	position: absolute;
+	width: 5px;
+}
+
+@font-face {
+	font-family: 'Fleches';
+	src:url('Fleches.ttf?lyso75') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+
+.ox-enteteTab .ox-affTot
+{
+	width: 1000px;
+}
+
+.ox-enteteTab.ox-triCroissant .ox-affTot .ox-marqueurTri,
+.ox-enteteTab.ox-triDecroissant .ox-affTot .ox-marqueurTri
+{
+	width: 25px;
+	height: 25px;
+	float: left;
+	line-height: 20px;
+	text-indent: 7px;
+	margin-right: -4px;
+	transform: rotate(90deg);
+}
+
+.ox-enteteTab.ox-triDecroissant .ox-affTot .ox-marqueurTri
+{
+	transform: rotate(270deg);
+	transition: transform 0.2s, margin-left 0.2s;
+}
+
+.ox-enteteTab.ox-triCroissant .ox-affTot .ox-marqueurTri:before,
+.ox-enteteTab.ox-triDecroissant .ox-affTot .ox-marqueurTri:before
+{
+	font-family: 'Fleches' !important;
+	font-size: 10px;
+	content: "\e92d";
+}
+
+.ox-enteteTab.ox-filtre .ox-affTot .ox-marqueurFiltre
+{
+	width: 25px;
+	height: 25px;
+	float: left;
+	line-height: 20px;
+	text-indent: 7px;
+	margin-right: -4px;
+}
+
+.ox-enteteTab.ox-filtre .ox-affTot .ox-marqueurFiltre:before
+{
+	font-family: 'Fleches' !important;
+	font-size: 10px;
+	content: "\e92c";
+}
+
+.ox-enteteTab.ox-estTriable
+{
+	cursor: pointer;
+}
+
+.ox-groupement
+{
+	height: 30px;
+	clear: both;
+	line-height: 28px;
+}
+
+.ox-enteteADeplacer
+{
+	padding: 2px 5px;
+	background-color: lightblue;
+	border: 1px solid #1ca8dd;
+	border-radius: 5px;
+	z-index: 1;
+}
+
+.ox-groupe
+{
+	margin: 2px;
+	padding: 1px 5px 3px;
+	background-color: lightblue;
+	border: 1px solid #1ca8dd;
+	border-radius: 5px;
+	line-height: 20px;
+	float: left;
+}
+
+.ox-groupe.ui-draggable-dragging
+{
+	opacity: 0.5;
+}
+
+.ox-fermetureGroupe
+{
+	margin-left: 5px;
+	cursor: pointer;
+}
+
+.ox-fermetureGroupe:before
+{
+	font-family: 'FontAwesome';
+	content: "\f00d";
+}
+
+.ox-groupeTemporaire
+{
+	padding: 2px 0;
+	margin: 2px 0;
+	border: 1px solid #5edd1c;
+	background-color: #c6e6ad;
+	border-radius: 5px;
+	float: left;
+	line-height: 20px;
+}
+
+/*----------------------------------------------------------*/
+/*						oxDefilement   						*/
+/*----------------------------------------------------------*/
+
+.ox-tableau .ox-barreX,
+.ox-tableau .ox-barreY
+{
+	background-color: #a3cee5;
+}
+
+.ox-tableau .ox-boutonX,
+.ox-tableau .ox-boutonY
+{
+	background-color: rgb(72, 172, 226);
+}
+
+/*----------------------------------------------------------*/
+
+.infoBulle
+{
+	position: fixed;
+	background-color: #1D1F20;
+	color: white;
+	border-radius: 5px;
+	-moz-user-select: none;
+	padding: 2px 5px;
+	display: none;
+	white-space: nowrap;
+	font-family: tahoma;
+	font-size: 15px;
+	box-shadow: 0 0 20px #808080 inset;
+	z-index: 1;
+}

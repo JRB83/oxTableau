@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>test objet défilement</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<style type="text/css">
+			#tableau
+			{
+				position: absolute;
+				width: 500px;
+				height: 300px;
+			}
+			#listeEltsSelectionnes,
+			#resultat,
+			#evenement
+			{
+				width: 400px;
+				height: 200px;
+				background-color: #FFA500; /*88BBFF*/
+				margin-left: 520px;
+				margin-bottom: 20px;
+				overflow: auto;
+				padding-left: 5px;
+				opacity: 0.8;
+				transition: opacity 0.5s;
+			}
+			#listeEltsSelectionnes,
+			#resultat,
+			button
+			{
+				float: left;
+			}
+			.selectionne
+			{
+				background-color: #1CA800;
+			}
+			#colonnes,
+			#index,
+			#align
+			{
+				width: 220px;
+				margin: 5px;
+				padding: 5px;
+				opacity: 0.2;
+				transition: opacity 0.5s;
+			}
+			#colonnes
+			{
+				border: 2px solid #5a5ad1;
+			}
+			#index
+			{
+				border: 2px solid #d74242;
+			}
+			#align
+			{
+				border: 2px solid #399339;
+			}
+			.requis
+			{
+				opacity: 1 !important;
+				transition: opacity 0.5s;
+			}
+		</style>
+		<link href="Styles/oxTableau.css" rel="stylesheet" />
+
+		<link href="Fleches.css" rel="stylesheet" />
+		<link href="awesome.css" rel="stylesheet" />
+
+		<script src="../Bibliotheque/js/jquery-2.0.0.js"></script>
+		<script src="../Bibliotheque/js/jquery-ui.1.11.2.js"></script>
+		<script src="./OxDefilement.js"></script>
+		<script src="./generateurDonnees.js"></script>
+		<script src="./oxSourceDeDonnees.js"></script>
+		<script src="./OxTableau.js"></script>
+	</head>
+	<body>
+		<div id = "tableau"></div>
+		<div id = "listeEltsSelectionnes"></div>
+		<div id = "evenement"></div>
+		<div id = "colonnes">Liste de colonnes : <select id = "listeColonnes"></select></div>
+		<div id = "index">Liste des index : <select id = "listeIndex"></select></div>
+		<div id = "align">Alignement : <select id = "alignement"><option>gauche</option><option>centrer</option><option>droite</option></select></div>
+		<button id = "aligner">Aligner</button>
+		<button id = "selectionner">Sélectionner</button>
+		<button id = "getEltsSelectionnes">get elts sélectionnés</button>
+		<button id = "ajouter">Ajouter</button>
+		<button id = "supprimer">Supprimer</button>
+		<button id = "modifier">Modifier</button>
+		<button id = "deplacer">Déplacer</button>
+		<button id = "changerDonnees">Changer données</button>
+		<button id = "redimensionnerTableau">Taille tableau</button>
+		<button id = "redimensionnerColonne">Taille colonne</button>
+		<button id = "masquerColonne">Masquer colonne</button>
+		<button id = "changerHauteurLigne">Changer hauteur ligne</button>
+		<button id = "gererPossibiliteRedim">Gérer redimensionnement</button>
+		<button id = "gererPossibilitetri">Gérer Tri</button>
+		<button id = "trier">Trier</button>
+		<button id = "grouper">Grouper</button>
+		<input type="input" id = "filtre" />
+	</body>
+	<script type="text/javascript">
+		var sdd = new Array();
+		for (var i = 0 ; i < 100 ; i++) {
+			var elt = { titre: donnees[Math.round(Math.random() * 9800)].pays, estSelectionne: true, pays: donnees[Math.round(Math.random() * 9800)].pays, ville: donnees[Math.round(Math.random() * 9800)].ville, entreprise: Math.round(Math.random() * 10), nom: donnees[Math.round(Math.random() * 9800)].nom, mail: donnees[Math.round(Math.random() * 9800)].mail, tel: donnees[Math.round(Math.random() * 9800)].tel, date: donnees[Math.round(Math.random() * 9800)].date };
+			sdd.push(elt);
+		}
+		var sdd3 = new Array();
+		for (var i = 0 ; i < 10 ; i++) {
+			var elt = { titre: donnees[Math.round(Math.random() * 9800)].pays, estSelectionne: true, pays: donnees[Math.round(Math.random() * 9800)].pays, ville: donnees[Math.round(Math.random() * 9800)].ville, entreprise: donnees[Math.round(Math.random() * 9800)].ent, nom: donnees[Math.round(Math.random() * 9800)].nom };
+			sdd3.push(elt);
+		}
+
+		$("#listeEltsSelectionnes").on("click", ".eltSelectionne", function () {
+			$("#listeEltsSelectionnes .eltSelectionne").removeClass("selectionne");
+			$(this).addClass("selectionne"); 
+		});
+		$("#aligner").on("click", function () {
+			tableau.modifierAlignement($("#listeColonnes :selected").data("donnees"), $("#alignement :selected").text());
+		}).on("mouseover", function () {
+			$("#colonnes").addClass("requis");
+			$("#align").addClass("requis");
+		}).on("mouseout", function () {
+			$("#colonnes").removeClass("requis");
+			$("#align").removeClass("requis");
+		});
+		$("#selectionner").on("click", function () {
+			var elt = $("#listeEltsSelectionnes .selectionne").data("donnees");
+			tableau.selectionner(elt);
+		}).on("mouseover", function () {
+			$("#listeEltsSelectionnes").addClass("requis");
+		}).on("mouseout", function () {
+			$("#listeEltsSelectionnes").removeClass("requis");
+		});
+		$("#getEltsSelectionnes").on("click", function () {
+			tableau.getEltsSelectionnes().forEach(function (elt) {
+				$("#listeEltsSelectionnes").append(elt.pays + "<br>");
+			})
+		});
+		$("#ajouter").on("click", function () {
+			var elt = { titre: donnees[Math.round(Math.random() * 9800)].pays, estSelectionne: true, pays: donnees[Math.round(Math.random() * 9800)].pays, ville: donnees[Math.round(Math.random() * 9800)].ville, entreprise: donnees[Math.round(Math.random() * 9800)].ent, nom: donnees[Math.round(Math.random() * 9800)].nom };
+			tableau.ajouterElements(elt, parseInt($("#listeIndex :selected").text()));
+		}).on("mouseover", function () {
+			$("#index").addClass("requis");
+		}).on("mouseout", function () {
+			$("#index").removeClass("requis");
+		});
+		$("#supprimer").on("click", function () {
+			var elt = $("#listeEltsSelectionnes .selectionne").data("donnees");
+			tableau.supprimerElements(elt);
+		}).on("mouseover", function () {
+			$("#listeEltsSelectionnes").addClass("requis");
+		}).on("mouseout", function () {
+			$("#listeEltsSelectionnes").removeClass("requis");
+		});
+		$("#modifier").on("click", function () {
+			var elt = $("#listeEltsSelectionnes .selectionne").data("donnees");
+			var elt2 = { estSelectionne: true, pays: donnees[Math.round(Math.random() * 9800)].pays, ville: donnees[Math.round(Math.random() * 9800)].ville, entreprise: donnees[Math.round(Math.random() * 9800)].ent, nom: donnees[Math.round(Math.random() * 9800)].nom };
+			tableau.modifierElements(elt, elt2);
+		}).on("mouseover", function () {
+			$("#listeEltsSelectionnes").addClass("requis");
+		}).on("mouseout", function () {
+			$("#listeEltsSelectionnes").removeClass("requis");
+		});
+		$("#deplacer").on("click", function () {
+			var elt = $("#listeEltsSelectionnes .selectionne").data("donnees");
+			tableau.deplacerElements(elt, parseInt($("#listeIndex :selected").text()));
+		}).on("mouseover", function () {
+			$("#listeEltsSelectionnes").addClass("requis");
+			$("#index").addClass("requis");
+		}).on("mouseout", function () {
+			$("#listeEltsSelectionnes").removeClass("requis");
+			$("#index").removeClass("requis");
+		});
+		$("#changerDonnees").on("click", function () {
+			tableau.changerDonnees(sdd3);
+		});
+		$("#redimensionnerTableau").on("click", function () {
+			tableau.redimensionnerTableau(1000, 400);
+		});
+		$("#redimensionnerColonne").on("click", function () {
+			tableau.redimensionnerColonne($("#listeColonnes :selected").data("donnees"), 100);
+		}).on("mouseover", function () {
+			$("#colonnes").addClass("requis");
+		}).on("mouseout", function () {
+			$("#colonnes").removeClass("requis");
+		});
+		$("#masquerColonne").on("click", function () {
+			tableau.gererAffichageColonne($("#listeColonnes :selected").data("donnees"), false);
+		}).on("mouseover", function () {
+			$("#colonnes").addClass("requis");
+		}).on("mouseout", function () {
+			$("#colonnes").removeClass("requis");
+		});
+		$("#changerHauteurLigne").on("click", function () {
+			tableau.changerHauteurLigne(20);
+		});
+		$("#gererPossibiliteRedim").on("click", function () {
+			tableau.gererPossibiliteRedim($("#listeColonnes :selected").data("donnees"), false);
+		}).on("mouseover", function () {
+			$("#colonnes").addClass("requis");
+		}).on("mouseout", function () {
+			$("#colonnes").removeClass("requis");
+		});
+		$("#gererPossibilitetri").on("click", function () {
+			tableau.gererPossibiliteTri($("#listeColonnes :selected").data("donnees"), false);
+		}).on("mouseover", function () {
+			$("#colonnes").addClass("requis");
+		}).on("mouseout", function () {
+			$("#colonnes").removeClass("requis");
+		});
+		$("#trier").on("click", function () {
+			tableau.trier($("#listeColonnes :selected").data("donnees"), "croissant");
+		}).on("mouseover", function () {
+			$("#colonnes").addClass("requis");
+		}).on("mouseout", function () {
+			$("#colonnes").removeClass("requis");
+		});
+		$("#grouper").on("click", function () {
+			tableau.grouper($("#listeColonnes :selected").data("donnees"), "croissant");
+		}).on("mouseover", function () {
+			$("#colonnes").addClass("requis");
+		}).on("mouseout", function () {
+			$("#colonnes").removeClass("requis");
+		});
+		$("#filtre").on("change", function () {
+			var donnees = $("#listeColonnes :selected").data("donnees");
+			var texte = $(this).val();
+			donnees && tableau.filtrer(donnees, texte);
+		});
+
+		var sdd2 = new oxSourceDeDonnees(sdd);
+		var tableau = new OxTableau($("#tableau"), { sourceDeDonnees: sdd, entetes: [{ nom: "Pays", reference: "pays", largeur: "20%" }, { nom: "Ville", reference: "ville" }, { nom: "Entreprise", reference: "entreprise", largeur: 300 }, { nom: "Nom", reference: "nom" }, { nom: "Courriel", reference: "mail" }, { nom: "Téléphone", reference: "tel" }, { nom: "Date", reference: "date" }], estRedimensionnable: true,/* etatInitial: [{ action: "groupe", colonne: "entreprise" }, { action: "tri", colonne: "ville", sens: "decroissant" }],*/ selection: function (donnees, orgEvt) {
+				var $nvtElt = $("<div class = 'eltSelectionne'>" + donnees[0].pays + "</div>");
+				$nvtElt.data("donnees", donnees);
+				$("#listeEltsSelectionnes").append($nvtElt);
+				$("#evenement").empty();
+				$("#evenement").append("Sélection : ", donnees[0].pays, ' ', orgEvt);
+		} });
+
+		var listeColonnes = tableau.getColonnes();
+		$("#listeColonnes").append($("<option>"));
+		for (var i = 0 ; i < listeColonnes.length ; i++){
+			var $colonne = $("<option>");
+			$colonne.data("donnees", listeColonnes[i]);
+			$colonne.text(listeColonnes[i].nom);
+			$("#listeColonnes").append($colonne);
+		}
+		$("#listeIndex").append($("<option>"));
+		for (var i = 0 ; i < tableau.getNbElements() ; i++)
+			$("#listeIndex").append($("<option>" + i + "</option>"));
+	</script>
+</html>
