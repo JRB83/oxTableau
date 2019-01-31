@@ -95,7 +95,7 @@ function OxTableau ($conteneur, proprietesUtil) {
 						var $balise = creerBaliseIntermediaire (html, objColonne[NOM]);
 						$balise.prepend("<div class = 'ox-marqueurFiltre'></div>");
 					}
-					else if (infos.action == "tri" || infos.action == "groupe") {
+					else if (infos.action == "tri"/* || infos.action == "groupe"*/) {
 						objColonne.oxSensTri = infos.sens;
 						if (objColonne.oxSensTri == "croissant"){
 							html.className = html.className.replace(/ ?ox-tri\w+/g, '') + " ox-triCroissant";
@@ -212,6 +212,7 @@ function OxTableau ($conteneur, proprietesUtil) {
 						return
 					listeCellules.push(new oxCellule(objColonne));
 				});
+				$($(ligne).find(".ox-colonne").get(0)).width($($(ligne).find(".ox-colonne").get(0)).width() + 1);		// pas de bord sur la première cellule
 
 				function oxCellule (objColonne) {
 					var cellule = document.createElement("div");
@@ -766,6 +767,7 @@ function OxTableau ($conteneur, proprietesUtil) {
 		objStructure.detruire();
 		objDefilement && objDefilement.detruire();
 		objDefilement = undefined;
+		infoBulle.detruire();
 		!conserverBalise && $conteneur.remove();
 	}
 
@@ -910,7 +912,7 @@ function OxTableau ($conteneur, proprietesUtil) {
 					$(colonne).data("infos", listeColonnes[i]);
 					if (entete.estTriable(listeColonnes[i]))
 						colonne.className = colonne.className + " ox-estTriable";
-					colonne.style.width = listeColonnes[i].largeurReelle - 1 + "px";
+					colonne.style.width = listeColonnes[i].largeurReelle - (i == 0 ? 0 : 1) + "px";		// si première colonne pas de bord
 					listeColonnes[i].html = colonne;
 					html.appendChild(colonne);
 
@@ -1066,14 +1068,15 @@ function OxTableau ($conteneur, proprietesUtil) {
 								if (listeGroupes[i].getHtml() == ui.draggable[0])
 									indexEltDeplace = i;
 							}
-								console.log(htmlRegroupement.children[indexEltDeRecup], objetEnCoursDeDeplacement)
 							var eltADeplacer = listeGroupes.splice(indexEltDeplace, 1);
 							if (posCurX > xMilieuGroupe){
-								$(htmlRegroupement.children[indexEltDeRecup]).after(objetEnCoursDeDeplacement);
+								if (htmlRegroupement.children[indexEltDeRecup] != objetEnCoursDeDeplacement)		// bug after avec jquery 1.7.1
+									$(htmlRegroupement.children[indexEltDeRecup]).after(objetEnCoursDeDeplacement);
 								listeGroupes.splice(indexEltDeplace > indexEltDeRecup ? indexEltDeRecup + 1 : indexEltDeRecup, 0, eltADeplacer[0]);
 							}
 							else{
-								$(htmlRegroupement.children[indexEltDeRecup]).before(objetEnCoursDeDeplacement);
+								if (htmlRegroupement.children[indexEltDeRecup] != objetEnCoursDeDeplacement)
+									$(htmlRegroupement.children[indexEltDeRecup]).before(objetEnCoursDeDeplacement);
 								listeGroupes.splice(indexEltDeplace > indexEltDeRecup ? indexEltDeRecup : indexEltDeRecup - 1, 0, eltADeplacer[0]);
 							}
 							instance.grouper(getHierarchieGroupement());
@@ -1235,6 +1238,10 @@ function OxTableau ($conteneur, proprietesUtil) {
 			delaiDisparition = setTimeout(function(){
 				$conteneur.get(0).style.display = "none";
 			}, 100);
+		}
+
+		this.detruire = function () {
+			$conteneur.remove();
 		}
 	}
 
