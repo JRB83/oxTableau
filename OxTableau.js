@@ -7,7 +7,7 @@ function OxTableau ($conteneur, proprietesUtil) {
 		colonnesRetaillables: false,
 		estTriable: true,
 		estGroupable: false,
-		filtreAutorise: true,
+		estTriable: true,
 		groupementAutorise: false,
 		colonneDeplacable: false,
 		donneesDeplacables: false,
@@ -15,7 +15,7 @@ function OxTableau ($conteneur, proprietesUtil) {
 		infosBulles: true,
 		estRedimensionnable: false,
 		modeDeSelection: { objet: "ligne", methode: "unique" },
-		Alignement: "centrer",
+		alignement: "gauche",
 		afficherNumeroLigne: false,
 		modeleDeCellule: null,
 		modeleDeLigne: null,
@@ -53,6 +53,7 @@ function OxTableau ($conteneur, proprietesUtil) {
 	var positionVue = 0;						// numéro du premier élément affiché parmi nbEltAffichables;
 	var elementsSelectionnes = [];
 	var infoBulle;
+	var fenetreAnnexe;
 
 	function getPileAppels() {
 		var listeFonctions = new Array();
@@ -65,80 +66,44 @@ function OxTableau ($conteneur, proprietesUtil) {
 		return listeFonctions;
 	}
 
-	function afficherInfosEntete (listeActions) {
-		function creerBaliseIntermediaire (html, nomEntete) {
-			var $balise = $(html).find(".ox-affTot");
-			if (!$balise.length) {
-				html.innerHTML = "<div class = 'ox-affTot'>" + nomEntete + "</div>";
-				$balise = $(html).find(".ox-affTot");
-			}
-			return $balise
-		}
-		var listeColonnes = objEntete.getColonnes();
-		// on nettoie tous les marqueurs
-		for (var i = 0 ; i < listeColonnes.length ; i++) {
-			var objColonne = listeColonnes[i];
-			objColonne.html.innerHTML = objColonne[NOM];
-			objColonne.html.className = objColonne.html.className.replace(/ ?ox-filtre\w+/g, '');
-		}
-		for (var i = 0 ; i < listeActions.length ; i++)
-		{
-			var critere = Object.keys(listeActions)[0];
-			var infos = listeActions[i];
-			parent = listeActions;
-			for (var j = 0 ; j < listeColonnes.length ; j++)
-				if (listeColonnes[j][REFERENCE] == infos.nomProp) {
-					var objColonne = listeColonnes[j];
-					var html = objColonne.html;
-					if (infos.action == "filtre") {
-						html.className = html.className + " ox-filtre";
-						var $balise = creerBaliseIntermediaire (html, objColonne[NOM]);
-						$balise.prepend("<div class = 'ox-marqueurFiltre'></div>");
-					}
-					else if (infos.action == "tri"/* || infos.action == "groupe"*/) {
-						objColonne.oxSensTri = infos.sens;
-						if (objColonne.oxSensTri == "croissant"){
-							html.className = html.className.replace(/ ?ox-tri\w+/g, '') + " ox-triCroissant";
-							var $balise = creerBaliseIntermediaire(html, objColonne[NOM]);
-							$balise.prepend("<div class = 'ox-marqueurTri'></div>");
-						}
-						else if (objColonne.oxSensTri == "decroissant") {
-							html.className = html.className.replace(/ ?ox-tri\w+/g, '') + " ox-triDecroissant";
-							var $balise = creerBaliseIntermediaire(html, objColonne[NOM]);
-							$balise.prepend("<div class = 'ox-marqueurTri'></div>");
-						}
-					}
-					break;
-				}
-		}
-	}
-
 	function creerSourceDeDonnees(donnees) {
 		sdd = donnees && donnees.constructor.name == "oxSourceDeDonnees" ? donnees : new oxSourceDeDonnees(donnees, { cheminWorker: proprietes.cheminWorker });
 		sdd.abonnerEvenement("tri", function (donnees, selecteur, afficherSelonRegroupement) {
 			//sdd.getElements().oxDonneesAffichees = selecteur;
-			objEntete.reinitialiserAffichageEntete();
-			var parent;										// TODO à virer
-			selecteur && afficherInfosEntete(sdd.getListeActionsDeSubsomption());
+		//	objEntete.reinitialiserAffichageEntete();
+			objEntete.reinitialiserAffichageEntete(sdd.getListeActionsDeSubsomption());
 			afficher(positionVue);
+			colorerColonnesEnFonctionDesActions();				// TODO la coloration doit etre gérer dans la fct afficher en fcontion de l'état de la colonne
 		});
 		sdd.abonnerEvenement("filtre", function (donnees, selecteur) {
-			if (Object.keys(selecteur)[0])
-				sdd.getElements().oxDonneesAffichees = selecteur;
-			selecteur && afficherInfosEntete(selecteur);
+			/*if (Object.keys(selecteur)[0])
+				sdd.getElements().oxDonneesAffichees = selecteur;*/
+			objEntete.reinitialiserAffichageEntete(sdd.getListeActionsDeSubsomption());
 			nbEltAffichables = donnees.length;
 			objDefilement.setHauteurContenu(nbEltAffichables * proprietes.hauteurDeLigne);
 			afficher(positionVue);
 		});
 		sdd.abonnerEvenement("groupe", function (donnees, selecteur) {
 			//sdd.getElements().oxDonneesAffichees = selecteur;
-			objEntete.reinitialiserAffichageEntete();
-			//selecteur && afficherInfosEntete(selecteur);
-			selecteur && afficherInfosEntete(sdd.getListeActionsDeSubsomption());
+		//	objEntete.reinitialiserAffichageEntete();
+			//selecteur && objEntete.afficherInfosEntete(selecteur);
+			objEntete.reinitialiserAffichageEntete(sdd.getListeActionsDeSubsomption());
 			nbEltAffichables = donnees.length;
 			objDefilement.setHauteurContenu(nbEltAffichables * proprietes.hauteurDeLigne);
 			afficher();
 		});
+	}
+
+	function colorerColonnesEnFonctionDesActions() {
+		var listeColonnes = objEntete.getColonnes();
+		var listeLignes = objStructure.getListeLignes();
+
+		for (var i = 0 ; i < listeColonnes.length ; i++)
+			for (var j = 0 ; j < listeLignes.length ; j++) {
+				listeLignes[j].getListeCellules()[i].getHtml().className = listeLignes[j].getListeCellules()[i].getHtml().className.replace(/ ?ox-colonneTriee/g, '');
+				if (listeColonnes[i].oxSensTri)
+					listeLignes[j].getListeCellules()[i].getHtml().className += " ox-colonneTriee";
+			}
 	}
 
 	function calculerHauteurContenu() {
@@ -194,8 +159,8 @@ function OxTableau ($conteneur, proprietesUtil) {
 						return;
 					var eltSelectionne = donnees[ESTSELECTIONNE];
 					if (e.shiftKey){
-						var indexEltClicke = sdd.getIndex(donnees);
-						var indexDernierElt = elementsSelectionnes ? sdd.getIndex(elementsSelectionnes[elementsSelectionnes.length - 1]) : 0;
+						var indexEltClicke = sdd.getIndex(donnees, true);
+						var indexDernierElt = elementsSelectionnes ? sdd.getIndex(elementsSelectionnes[elementsSelectionnes.length - 1], true) : 0;
 						var nbEltsVoulus = Math.abs(indexDernierElt - indexEltClicke);
 						var indexPremierElt = indexDernierElt < indexEltClicke ? indexDernierElt + 1 : indexEltClicke;
 						donnees = sdd.getElements(null, indexPremierElt, nbEltsVoulus);
@@ -209,7 +174,7 @@ function OxTableau ($conteneur, proprietesUtil) {
 
 				objEntete.fairePourChaqueColonne(function(objColonne) {
 					if (!objColonne[ESTAFFICHEE])
-						return
+						return;
 					listeCellules.push(new oxCellule(objColonne));
 				});
 				$($(ligne).find(".ox-colonne").get(0)).width($($(ligne).find(".ox-colonne").get(0)).width() + 1);		// pas de bord sur la première cellule
@@ -259,6 +224,10 @@ function OxTableau ($conteneur, proprietesUtil) {
 
 					this.redimensionner = function (largeur) {
 						cellule.style.width = largeur + "px";
+					}
+
+					this.getHtml = function (largeur) {
+						return cellule;
 					}
 
 					this.detruire = function () {
@@ -372,7 +341,7 @@ function OxTableau ($conteneur, proprietesUtil) {
 		}
 
 		this.setNbLignesTableau = function (nbLignes) {
-			return nbLignesTableau = nbLignes;;
+			return nbLignesTableau = nbLignes;
 		}
 
 		this.redimensionner = function (hauteur) {
@@ -413,13 +382,13 @@ function OxTableau ($conteneur, proprietesUtil) {
 	}
 
 	this.filtrer = function (objColonne, texte) {
-		sdd.filtrer(null, objColonne[REFERENCE], texte, sdd.getElements().oxDonneesAffichees);
+		sdd.filtrer(null, objColonne[REFERENCE], texte);
 	}
 
 	this.trier = function (objColonne, sens, cumul) {
 		if (!objEntete.estTriable(objColonne))
 			return;
-		sdd.trier(null, objColonne[REFERENCE], sens, cumul/*, sdd.getElements().oxDonneesAffichees*/);
+		sdd.trier(null, objColonne[REFERENCE], sens, cumul);
 	}
 
 	this.grouper = function (listeObjsColonne) {
@@ -433,7 +402,7 @@ function OxTableau ($conteneur, proprietesUtil) {
 		creerSourceDeDonnees(proprietes.sourceDeDonnees);
 		nbEltAffichables = sdd.getElements().length;
 
-		objEntete = new objEntete();
+		objEntete = new ObjEntete();
 
 		($conteneur.get(0).className += " ox-tableau").replace(/^ /, '');
 		contenu = document.createElement("div");
@@ -564,10 +533,11 @@ function OxTableau ($conteneur, proprietesUtil) {
 	this.toutSelectionner = function () {
 		if (proprietes.modeDeSelection.methode != "unique"){
 			elementsSelectionnes = [];
-			sdd.getElements().forEach(function(objLigne) {
-				objLigne[ESTSELECTIONNE] = true;
-				elementsSelectionnes.push(objLigne);
-			});
+			var listeElts = sdd.getElements();
+			for (var i = 0 ; i < listeElts.length ; i++) {
+				listeElts[i][ESTSELECTIONNE] = true;
+				elementsSelectionnes.push(listeElts[i]);
+			}
 			afficher(positionVue);
 			if (typeof proprietes.selection == "function")
 				proprietes.selection(elementsSelectionnes, "systeme");
@@ -605,6 +575,18 @@ function OxTableau ($conteneur, proprietesUtil) {
 		afficher(positionVue);
 		if (typeof proprietes.selection == "function")
 			proprietes.selection(donnees, getPileAppels()[1] == "evtSelectionLigne" ? "utilisateur" : "systeme");
+	}
+
+	this.toutDeselectionner = function () {
+		if (proprietes.modeDeSelection.methode != "unique"){
+			elementsSelectionnes = [];
+			var listeElts = sdd.getElements();
+			for (var i = 0 ; i < listeElts.length ; i++)
+				listeElts[i][ESTSELECTIONNE] = false;
+			afficher(positionVue);
+			if (typeof proprietes.selection == "function")
+				proprietes.selection(elementsSelectionnes, "systeme");
+		}
 	}
 
 	this.deselectionner = function (donnees) {
@@ -762,6 +744,41 @@ function OxTableau ($conteneur, proprietesUtil) {
 		objStructure.rafraichir();
 	}
 
+	this.exporterVersExcel = function (exporterSelection) {
+		var exportExcel = '';
+		var colonnesAExporter = [];
+		var donneesAExporter = exporterSelection ? instance.getEltsSelectionnes() : sdd.getElements();
+
+		function formatterTexte (obj, objRef) {
+			var texte = obj[objRef.ref];
+			if (objRef.format == "date") {
+				texte = texte.toLocaleDateString("fr-FR", obj[AFFICHAGEDATE]);
+				texte = texte == "Invalid Date" ? '' : texte;
+			}
+			if (objRef.format == "temps") {
+				texte = texte.toLocaleTimeString("fr-FR", obj[AFFICHAGEDATE]);
+				texte = texte == "Invalid Date" ? '' : texte;
+			}
+			obj[PREFIXE] && (texte = obj[PREFIXE] + ' ' + texte);
+			obj[SUFFIXE] && (texte = texte + ' ' + obj[SUFFIXE]);
+			return texte;
+		}
+
+		objEntete.fairePourChaqueColonne(function (objColonne) {
+			if (objColonne[ESTAFFICHEE]) {
+				colonnesAExporter.push({ ref: objColonne[REFERENCE], format: objColonne[FORMAT]});
+				exportExcel += "\"" + objColonne[NOM] + "\";";
+			}
+		});
+		exportExcel = exportExcel.replace(/;$/, '\n');							// on vire le dernier ;
+		donneesAExporter.forEach(function(ligne) {
+			for (var i = 0 ; i < colonnesAExporter.length ; i++)
+				exportExcel += "\"" + formatterTexte(ligne, colonnesAExporter[i]) + "\";";
+			exportExcel = exportExcel.replace(/;$/, '\n');
+		});
+		return exportExcel;
+	}
+
 	this.detruire = function (conserverBalise) {
 		objEntete.detruire();
 		objStructure.detruire();
@@ -771,7 +788,7 @@ function OxTableau ($conteneur, proprietesUtil) {
 		!conserverBalise && $conteneur.remove();
 	}
 
-	function objEntete() {
+	function ObjEntete() {
 		var entete = this;
 		var html = document.createElement("div");
 		html.className = "ox-enteteTableau";
@@ -873,12 +890,37 @@ function OxTableau ($conteneur, proprietesUtil) {
 				instance.trier(infos, infos.oxSensTri == "croissant" ? "decroissant" : infos.oxSensTri == "decroissant" ? null : "croissant", e.ctrlKey);
 		}
 
+		function clickGestionFenetreAnnexe (e) {
+			e.stopPropagation();
+			var infos = $(this).parent().data("infos");
+			var decalageGauche = 0;
+			entete.fairePourChaqueColonne(function (colonne, i) {
+				if (colonne == infos)
+					return false;
+				decalageGauche += parseInt(colonne.html.style.width.replace("px", '')) + (i > 0 ? 1 : 0);
+			});
+			if (!fenetreAnnexe)
+				fenetreAnnexe = new FenetreAnnexe();
+			fenetreAnnexe.setParametres(infos, decalageGauche, 56);
+			fenetreAnnexe.montrer();
+		}
+
 		this.estTriable = function (objColonne) {
 			if (objColonne[ESTTRIABLE] == false)
 				return false;
 			else if (objColonne[ESTTRIABLE] == true)
 				return true;
 			else if (proprietes[ESTTRIABLE] == true)
+				return true;
+			return false;
+		}
+
+		this.estFiltrable = function (objColonne) {
+			if (objColonne[ESTFILTRABLE] == false)
+				return false;
+			else if (objColonne[ESTFILTRABLE] == true)
+				return true;
+			else if (proprietes[ESTFILTRABLE] == true)
 				return true;
 			return false;
 		}
@@ -891,11 +933,44 @@ function OxTableau ($conteneur, proprietesUtil) {
 		/*
 			on vire les marques de tri, filtre, ...
 		*/
-		this.reinitialiserAffichageEntete = function () {
+		/*this.reinitialiserAffichageEntete = function () {
 			for (var i = 0 ; i < listeColonnes.length ; i++){
 				delete listeColonnes[i].oxSensTri;
 				listeColonnes[i].html.className = listeColonnes[i].html.className.replace(/ ?ox-tri\w+/g, '');
-				listeColonnes[i].html.innerHTML = listeColonnes[i][NOM];
+				listeColonnes[i].html.textContent = listeColonnes[i][NOM];
+				/!*if (proprietes.estTriable)															// TODO à corriger
+					listeColonnes[i].html.textContent.appendChild(activationFiltre);*!/
+			}
+		}*/
+
+		this.reinitialiserAffichageEntete = function (listeActions) {
+			// on nettoie tous les marqueurs
+			for (var i = 0 ; i < listeColonnes.length ; i++) {
+				var objColonne = listeColonnes[i];
+				delete objColonne.oxSensTri;
+				//objColonne.html.textContent = objColonne[NOM];
+				$(objColonne.html).find(".ox-marqueurTri").remove();
+				objColonne.html.className = objColonne.html.className.replace(/ ?ox-filtre| ?ox-tri\w+/g, '');
+				$(objColonne.html).find(".ox-activationFiltre").removeClass("ox-filterEnCours");
+			}
+			for (var i = 0 ; i < listeActions.length ; i++)
+			{
+				var critere = Object.keys(listeActions)[0];
+				var infos = listeActions[i];
+				parent = listeActions;
+				for (var j = 0 ; j < listeColonnes.length ; j++)
+					if (listeColonnes[j][REFERENCE] == infos.nomProp) {
+						var objColonne = listeColonnes[j];
+						var html = objColonne.html;
+						if (infos.action == "filtre")
+							$(html).find(".ox-activationFiltre").addClass("ox-filterEnCours");
+						else if (infos.action == "tri"/* || infos.action == "groupe"*/) {
+							objColonne.oxSensTri = infos.sens;
+							html.className = html.className.replace(/ ?ox-tri\w+/g, '') + " ox-tri" + infos.sens[0].toUpperCase() + infos.sens.substring(1);
+							$(html).prepend("<div class = 'ox-marqueurTri'></div>");
+						}
+						break;
+					}
 			}
 		}
 
@@ -907,11 +982,19 @@ function OxTableau ($conteneur, proprietesUtil) {
 			for (let i = 0 ; i < listeColonnes.length ; i++)
 				if (listeColonnes[i][ESTAFFICHEE]) {
 					let colonne = document.createElement("div");
-					colonne.innerHTML = listeColonnes[i][NOM];
+					colonne.textContent = listeColonnes[i][NOM];
 					colonne.className = "ox-enteteTab";
 					$(colonne).data("infos", listeColonnes[i]);
+
+					let activationFiltre = document.createElement("div");
+					activationFiltre.className = "ox-activationFiltre";
+					colonne.appendChild(activationFiltre);
+					activationFiltre.addEventListener("click", clickGestionFenetreAnnexe);
+					if (entete.estFiltrable(listeColonnes[i]))
+						colonne.className += " ox-estFiltrable";
+
 					if (entete.estTriable(listeColonnes[i]))
-						colonne.className = colonne.className + " ox-estTriable";
+						colonne.className += " ox-estTriable";
 					colonne.style.width = listeColonnes[i].largeurReelle - (i == 0 ? 0 : 1) + "px";		// si première colonne pas de bord
 					listeColonnes[i].html = colonne;
 					html.appendChild(colonne);
@@ -929,7 +1012,8 @@ function OxTableau ($conteneur, proprietesUtil) {
 
 		this.fairePourChaqueColonne = function (fonctionDeRetour) {
 			for (var i = 0 ; i < listeColonnes.length ; i++)
-				fonctionDeRetour(listeColonnes[i], i);
+				if (fonctionDeRetour(listeColonnes[i], i) == false)
+					return;
 		}
 
 		this.masquerRedimensionneur = function () {
@@ -980,6 +1064,7 @@ function OxTableau ($conteneur, proprietesUtil) {
 				colonne.html.removeEventListener("click", clickNomColonne);
 				colonne.html.removeEventListener("mousemove", nomColonneDeplacee);
 				colonne.html.removeEventListener("mouseout", nomColonneSourisSort);
+				colonne.html.getElementsByClassName("ox-activationFiltre")[0].removeEventListener("click", clickGestionFenetreAnnexe);
 			});
 			regroupement && regroupement.detruire();
 			curseurDeRedimensionnement.detruire();
@@ -1219,14 +1304,20 @@ function OxTableau ($conteneur, proprietesUtil) {
 		this.setTexte = function (texte) {
 			clearTimeout(delaiDisparition);
 			$conteneur.html(texte);
+			$conteneur.get(0).style.width = '';
+			if ($conteneur.width() > 400)
+				$conteneur.get(0).style.width = "400px";
 			delaiApparition = setTimeout(function(){
 				afficher();
 			}, 500);
 		}
 
 		this.positionner = function (haut, gauche) {
+			var posGauche = gauche + 15;
 			$conteneur.get(0).style.top = haut + 15 + "px";
-			$conteneur.get(0).style.left = gauche + 15 + "px";
+			$conteneur.get(0).style.left = posGauche + "px";
+			if (posGauche + $conteneur.width() + 10 > window.innerWidth)
+				$conteneur.get(0).style.left = window.innerWidth - $conteneur.width() - 10 + "px";
 		}
 
 		function afficher () {
@@ -1243,6 +1334,74 @@ function OxTableau ($conteneur, proprietesUtil) {
 		this.detruire = function () {
 			$conteneur.remove();
 		}
+	}
+
+	function FenetreAnnexe () {
+		var ifa = this;
+		var objColonne;
+		var $conteneur = $("<div class = 'fenetreAnnexe'></div>");
+		var $filtre = $("<input type = 'text' name = 'filtre' />");
+		var $actionFiltrer = $("<input type = 'button' value = 'Filtrer' />");
+		var $actionReinitialiser = $("<input type = 'button' value = 'Réinitialiser' />");
+
+		function empecherPropagationEvt (e) {
+			e.stopPropagation();
+		};
+
+		function filtrer () {
+			instance.filtrer(objColonne, $filtre.val());
+			ifa.masquer();
+		};
+
+		function reinitialiserFiltre () {
+			instance.filtrer(objColonne, '');
+			ifa.masquer();
+		};
+
+		this.setParametres = function (objC, x, y) {
+			objColonne = objC;
+			$conteneur.css("left", x);
+			$conteneur.css("top", y);
+		};
+
+		this.montrer = function () {
+			var critereDeFiltre = "";
+			sdd.getListeActionsDeSubsomption().forEach(function (action) {
+				if (action.action == "filtre" && action.nomProp == objColonne[REFERENCE])
+					critereDeFiltre = action.critere;
+			});
+			$filtre.val(critereDeFiltre);
+			$conteneur.show({ effect: "blind", easing: "linear", duration: 200 });
+			$filtre.focus();
+		};
+
+		this.masquer = function () {
+			$conteneur.hide({ effect: "blind", easing: "linear", duration: 200 });
+		};
+
+		this.detruire = function () {
+			$conteneur.remove();
+			$("html").off("click", ifa.masquer);
+			$filtre.off("click", empecherPropagationEvt);
+			$conteneur.off("click", empecherPropagationEvt);
+			$conteneur.off("keypress");
+			$actionFiltrer.off("click", filtrer);
+			$actionReinitialiser.off("click", reinitialiserFiltre);
+		};
+
+		(function construire () {
+			instance.getConteneur().append($conteneur);
+			$conteneur.append($filtre);
+			$conteneur.append($actionFiltrer);
+			$conteneur.append($actionReinitialiser);
+
+			$("html").on("click", ifa.masquer);
+			$filtre.on("click", empecherPropagationEvt);
+			$conteneur.on("click", empecherPropagationEvt);
+			$conteneur.on("keypress", function (e) { if (e.which == 13) filtrer(); });
+			$actionFiltrer.on("click", filtrer);
+			$actionReinitialiser.on("click", reinitialiserFiltre);
+		})();
 	}
 
 	initialiser();

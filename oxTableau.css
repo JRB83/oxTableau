@@ -20,16 +20,18 @@
 	height: 25px;
 	float: left;
 	overflow: hidden;
+	text-overflow: ellipsis;
+    font-size: 16px;
 	line-height: 25px;
-	text-indent: 5px;
+	text-indent: 16px;
 	color: white;
 	background-color: #449bca;
 	border-top: 1px solid #3f70b9;
 }
 
-.ox-enteteTab:not(:last-child)
+.ox-enteteTab + .ox-enteteTab
 {
-	border-right: 1px solid #3f70b9;
+	border-left: 1px solid #3f70b9;
 }
 
 .ox-ligne
@@ -116,9 +118,9 @@
 	border-bottom: 1px solid #e5e5e6;
 }
 
-.ox-colonne:not(:last-child)
+.ox-colonne + .ox-colonne
 {
-	border-right: 1px solid #e5e5e6;
+	border-left: 1px solid #e5e5e6;
 }
 
 .ox-ligne:not(".ox-nonSelectionnable"):hover
@@ -151,7 +153,8 @@
 {
 	cursor: col-resize;
 	height: 100%;
-	margin-top: -20px;
+    margin-top: -26px;
+    margin-left: 4px;
 	left: -5px;
 	position: absolute;
 	width: 5px;
@@ -164,57 +167,41 @@
 	font-style: normal;
 }
 
-.ox-enteteTab .ox-affTot
-{
-	width: 1000px;
-}
-
-.ox-enteteTab.ox-triCroissant .ox-affTot .ox-marqueurTri,
-.ox-enteteTab.ox-triDecroissant .ox-affTot .ox-marqueurTri
+.ox-enteteTab.ox-triCroissant .ox-marqueurTri,
+.ox-enteteTab.ox-triDecroissant .ox-marqueurTri
 {
 	width: 25px;
 	height: 25px;
 	float: left;
-	line-height: 20px;
+	line-height: 0;
 	text-indent: 7px;
 	margin-right: -4px;
 	transform: rotate(90deg);
 }
 
-.ox-enteteTab.ox-triDecroissant .ox-affTot .ox-marqueurTri
+.ox-enteteTab.ox-triDecroissant .ox-marqueurTri
 {
 	transform: rotate(270deg);
 	transition: transform 0.2s, margin-left 0.2s;
+	line-height: 44px;
 }
 
-.ox-enteteTab.ox-triCroissant .ox-affTot .ox-marqueurTri:before,
-.ox-enteteTab.ox-triDecroissant .ox-affTot .ox-marqueurTri:before
+.ox-enteteTab.ox-triCroissant .ox-marqueurTri:before,
+.ox-enteteTab.ox-triDecroissant .ox-marqueurTri:before
 {
 	font-family: 'Fleches' !important;
 	font-size: 10px;
 	content: "\e92d";
 }
 
-.ox-enteteTab.ox-filtre .ox-affTot .ox-marqueurFiltre
-{
-	width: 25px;
-	height: 25px;
-	float: left;
-	line-height: 20px;
-	text-indent: 7px;
-	margin-right: -4px;
-}
-
-.ox-enteteTab.ox-filtre .ox-affTot .ox-marqueurFiltre:before
-{
-	font-family: 'Fleches' !important;
-	font-size: 10px;
-	content: "\e92c";
-}
-
 .ox-enteteTab.ox-estTriable
 {
 	cursor: pointer;
+}
+
+.ox-enteteTab .ox-activationFiltre.ox-filterEnCours
+{
+	color: #82e673;
 }
 
 .ox-groupement
@@ -272,6 +259,16 @@
 	line-height: 20px;
 }
 
+.ox-colonne.ox-colonneTriee
+{
+	background-color: #def5e2;
+}
+
+.ox-selectionne .ox-colonne.ox-colonneTriee
+{
+	background-color: #97d9e5;
+}
+
 /*----------------------------------------------------------*/
 /*						oxDefilement   						*/
 /*----------------------------------------------------------*/
@@ -299,9 +296,70 @@
 	-moz-user-select: none;
 	padding: 2px 5px;
 	display: none;
-	white-space: nowrap;
 	font-family: tahoma;
-	font-size: 15px;
+	font-size: 12px;
 	box-shadow: 0 0 20px #808080 inset;
-	z-index: 1;
+	z-index: 100;
 }
+
+/*----------------------------------------------------------*/
+/*						fenetreAnexe   						*/
+/*----------------------------------------------------------*/
+
+.ox-activationFiltre
+{
+	position: absolute;
+	width: 15px;
+	top: 30px;
+	float: right;
+	font-size: 10px;
+    text-indent: 4px;
+}
+
+.ox-activationFiltre:before
+{
+	font-family: 'FontAwesome' !important;
+	content: "\f0b0";
+}
+
+.ox-estFiltrable .ox-activationFiltre
+{
+	display: block;
+}
+
+.filtreApplique .ox-activationFiltre
+{
+	color: green;
+}
+
+.fenetreAnnexe
+{
+    display: none;
+	position: absolute;
+	padding: 5px;
+	width: 150px;
+	border: 1px solid #3f70b9;
+	background-color: #449bca;
+	border-bottom-left-radius: 10px;
+	border-bottom-right-radius: 10px;
+}
+
+.fenetreAnnexe input[name=filtre]
+{
+    width: 140px;
+    margin-left: 3px;
+    background-color: #a3cee5;
+    border: 0;
+}
+
+.fenetreAnnexe input[type=button]
+{
+    background-color: #a3cee5;
+    border: 1px solid #a3cee5;
+    margin: 4px;
+    border-radius: 5px;
+    padding: 2px 6px;
+    cursor: pointer;
+}
+
+/*----------------------------------------------------------*/
