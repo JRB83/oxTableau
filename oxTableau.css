@@ -4,6 +4,7 @@
 	border: 1px solid #c8d3da;
 	color: gray;
 	overflow: hidden;
+	font-family: Calibri;
 	user-select: none;
 	-moz-user-select: none;
 }
@@ -45,7 +46,7 @@
 {
 	float: left;
 	overflow: hidden;
-	text-indent: 10px;
+	text-indent: 5px;
 	box-shadow: -10px 0px 10px -10px #ddd inset;
 }
 
@@ -283,6 +284,13 @@
 .ox-tableau .ox-boutonY
 {
 	background-color: rgb(72, 172, 226);
+}
+
+.ox-tableau .ox-boutonX:hover,
+.ox-tableau .ox-boutonY:hover
+{
+	background-color: rgb(45, 137, 188);
+	transition: background-color 0.5s;
 }
 
 /*----------------------------------------------------------*/
