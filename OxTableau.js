@@ -165,7 +165,12 @@ function OxTableau ($conteneur, proprietesUtil) {
 						var indexPremierElt = indexDernierElt < indexEltClicke ? indexDernierElt + 1 : indexEltClicke;
 						donnees = sdd.getElements(null, indexPremierElt, nbEltsVoulus);
 					}
-					if (!eltSelectionne)
+					if (eltSelectionne && elementsSelectionnes.length > 1) {
+						for (var i = 0 ; i < elementsSelectionnes.length ; i++)
+							instance.deselectionner(elementsSelectionnes[i]);
+						instance.selectionner(donnees, e.ctrlKey || e.shiftKey);
+					}
+					else if (!eltSelectionne)
 						instance.selectionner(donnees, e.ctrlKey || e.shiftKey);
 					else
 						instance.deselectionner(donnees);
@@ -901,7 +906,7 @@ function OxTableau ($conteneur, proprietesUtil) {
 			});
 			if (!fenetreAnnexe)
 				fenetreAnnexe = new FenetreAnnexe();
-			fenetreAnnexe.setParametres(infos, decalageGauche, 56);
+			fenetreAnnexe.setParametres(infos, decalageGauche, entete.getHtml().clientHeight);
 			fenetreAnnexe.montrer();
 		}
 
@@ -988,7 +993,7 @@ function OxTableau ($conteneur, proprietesUtil) {
 
 					let activationFiltre = document.createElement("div");
 					activationFiltre.className = "ox-activationFiltre";
-					colonne.appendChild(activationFiltre);
+					colonne.prepend(activationFiltre);
 					activationFiltre.addEventListener("click", clickGestionFenetreAnnexe);
 					if (entete.estFiltrable(listeColonnes[i]))
 						colonne.className += " ox-estFiltrable";
@@ -1376,7 +1381,8 @@ function OxTableau ($conteneur, proprietesUtil) {
 		};
 
 		this.masquer = function () {
-			$conteneur.hide({ effect: "blind", easing: "linear", duration: 200 });
+			if ($conteneur.is(":visible"))
+				$conteneur.hide({ effect: "blind", easing: "linear", duration: 200 });
 		};
 
 		this.detruire = function () {
