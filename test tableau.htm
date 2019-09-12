@@ -17,6 +17,7 @@
 			{
 				width: 400px;
 				height: 200px;
+				clear: left;
 				background-color: #FFA500; /*88BBFF*/
 				margin-left: 520px;
 				margin-bottom: 20px;
@@ -88,16 +89,17 @@
 		<button id = "ajouter">Ajouter</button>
 		<button id = "supprimer">Supprimer</button>
 		<button id = "modifier">Modifier</button>
-		<button id = "deplacer">Déplacer</button>
+<!--		<button id = "deplacer">Déplacer</button>-->
 		<button id = "changerDonnees">Changer données</button>
 		<button id = "redimensionnerTableau">Taille tableau</button>
 		<button id = "redimensionnerColonne">Taille colonne</button>
 		<button id = "masquerColonne">Masquer colonne</button>
 		<button id = "changerHauteurLigne">Changer hauteur ligne</button>
-		<button id = "gererPossibiliteRedim">Gérer redimensionnement</button>
-		<button id = "gererPossibilitetri">Gérer Tri</button>
+		<button id = "gererPossibiliteRedim">Supprimer redimensionnement</button>
+		<button id = "gererPossibilitetri">Supprimer Tri</button>
 		<button id = "trier">Trier</button>
 		<button id = "grouper">Grouper</button>
+		Filtre :
 		<input type="input" id = "filtre" />
 	</body>
 	<script type="text/javascript">
@@ -231,7 +233,7 @@
 		});
 
 		var sdd2 = new oxSourceDeDonnees(sdd);
-		var tableau = new OxTableau($("#tableau"), { sourceDeDonnees: sdd, entetes: [{ nom: "Pays", reference: "pays", largeur: "20%" }, { nom: "Ville", reference: "ville" }, { nom: "Entreprise", reference: "entreprise", largeur: 300 }, { nom: "Nom", reference: "nom" }, { nom: "Courriel", reference: "mail" }, { nom: "Téléphone", reference: "tel" }, { nom: "Date", reference: "date" }], estRedimensionnable: true,/* etatInitial: [{ action: "groupe", colonne: "entreprise" }, { action: "tri", colonne: "ville", sens: "decroissant" }],*/ selection: function (donnees, orgEvt) {
+		var tableau = new OxTableau($("#tableau"), { sourceDeDonnees: sdd, entetes: [{ nom: "Pays", reference: "pays", largeur: "20%" }, { nom: "Ville", reference: "ville" }, { nom: "Entreprise", reference: "entreprise", largeur: 300 }, { nom: "Nom", reference: "nom" }, { nom: "Courriel", reference: "mail" }, { nom: "Téléphone", reference: "tel" }, { nom: "Date", reference: "date" }], estRedimensionnable: true,/* etatInitial: [{ action: "groupe", colonne: "entreprise" }, { action: "tri", colonne: "ville", sens: "decroissant" }],*/ estGroupable: true, selection: function (donnees, orgEvt) {
 				var $nvtElt = $("<div class = 'eltSelectionne'>" + donnees[0].pays + "</div>");
 				$nvtElt.data("donnees", donnees);
 				$("#listeEltsSelectionnes").append($nvtElt);
