@@ -6,6 +6,7 @@
 	color: gray;
 	overflow: hidden;
 	font-family: Calibri;
+	font-size: 15px;
 	user-select: none;
 	-moz-user-select: none;
 }
@@ -194,6 +195,7 @@
 	font-family: 'Fleches' !important;
 	font-size: 10px;
 	content: "\e92d";
+	line-height: 20px;
 }
 
 .ox-enteteTab.ox-estTriable
