@@ -166,9 +166,13 @@ function OxTableau ($conteneur, proprietesUtil) {
 						donnees = sdd.getElements(null, indexPremierElt, nbEltsVoulus);
 					}
 					if (eltSelectionne && elementsSelectionnes.length > 1) {
-						for (var i = 0 ; i < elementsSelectionnes.length ; i++)
-							instance.deselectionner(elementsSelectionnes[i]);
-						instance.selectionner(donnees, e.ctrlKey || e.shiftKey);
+						if (e.ctrlKey)
+							instance.deselectionner(donnees);
+						else {
+							for (var i = elementsSelectionnes.length; i >= 0; i--)
+								instance.deselectionner(elementsSelectionnes[i]);
+							instance.selectionner(donnees, e.ctrlKey || e.shiftKey);
+						}
 					}
 					else if (!eltSelectionne)
 						instance.selectionner(donnees, e.ctrlKey || e.shiftKey);
@@ -739,15 +743,64 @@ function OxTableau ($conteneur, proprietesUtil) {
 			listeIndex.push(sdd.getIndex(listeElements[i]));
 
 		return listeIndex;
-	}
+	};
 
 	this.getSourceDeDonnees = function () {
 		return sdd;
-	}
+	};
+
+	this.getListeGroupes = function () {
+		return objEntete.getListeGroupes();
+	};
 
 	this.rafraichir = function (hauteur) {
 		objStructure.rafraichir();
-	}
+	};
+
+	this.exporterVersHtml = function (exporterSelection) {
+		var listeGroupes = instance.getListeGroupes();
+		var $htmlGroupe = $("<div style = 'margin-bottom: 20px;'></div>");
+		listeGroupes.forEach(function (groupe) {
+			$htmlGroupe.append("<span style = 'background-color: #0A73A7; padding: 2px 5px; float: left; margin-right: 10px;'>" + groupe.getObjet().Title + "</span>");
+		});
+		var $exportHtml = $("<table><tr></tr></table>");
+		$exportHtml.prepend($htmlGroupe);
+		$exportHtml.find("tr").addClass("entete");
+		$exportHtml.append("<style>.entete { background-color: #3c91c2; color: white; } td { border-bottom: 1px solid; border-right: 1px solid; }</style>");
+		var colonnesAExporter = [];
+		var donneesAExporter = exporterSelection ? instance.getEltsSelectionnes() : sdd.getElements();
+
+		function formatterTexte (obj, objRef) {
+			var texte = obj[objRef.ref];
+			if (objRef.format == "date") {
+				texte = texte.toLocaleDateString("fr-FR", obj[AFFICHAGEDATE]);
+				texte = texte == "Invalid Date" ? '' : texte;
+			}
+			if (objRef.format == "temps") {
+				texte = texte.toLocaleTimeString("fr-FR", obj[AFFICHAGEDATE]);
+				texte = texte == "Invalid Date" ? '' : texte;
+			}
+			obj[PREFIXE] && (texte = obj[PREFIXE] + ' ' + texte);
+			obj[SUFFIXE] && (texte = texte + ' ' + obj[SUFFIXE]);
+			return texte;
+		}
+
+		objEntete.fairePourChaqueColonne(function (objColonne) {
+			if (objColonne[ESTAFFICHEE]) {
+				colonnesAExporter.push({ ref: objColonne[REFERENCE], format: objColonne[FORMAT]});
+				$exportHtml.find("tr").append("<td>" + objColonne[NOM] + "</td>");
+			}
+		});
+		donneesAExporter.forEach(function(ligne) {
+			var $ligne = $("<tr>");
+			for (var i = 0 ; i < colonnesAExporter.length ; i++)
+				$ligne.append("<td>" + formatterTexte(ligne, colonnesAExporter[i]) + "</td>");
+			$exportHtml.append($ligne);
+		});
+		var $html = $("<div>");
+		$html.append($htmlGroupe).append("<br>").append($exportHtml);
+		return $html;
+	};
 
 	this.exporterVersExcel = function (exporterSelection) {
 		var exportExcel = '';
@@ -782,7 +835,7 @@ function OxTableau ($conteneur, proprietesUtil) {
 			exportExcel = exportExcel.replace(/;$/, '\n');
 		});
 		return exportExcel;
-	}
+	};
 
 	this.detruire = function (conserverBalise) {
 		objEntete.detruire();
@@ -791,7 +844,7 @@ function OxTableau ($conteneur, proprietesUtil) {
 		objDefilement = undefined;
 		infoBulle.detruire();
 		!conserverBalise && $conteneur.remove();
-	}
+	};
 
 	function ObjEntete() {
 		var entete = this;
@@ -1063,6 +1116,10 @@ function OxTableau ($conteneur, proprietesUtil) {
 			return regroupement;
 		}
 
+		this.getListeGroupes = function () {
+			return regroupement.getListeGroupes();
+		}
+
 		this.detruire = function () {
 			listeColonnes.forEach(function (colonne) {
 				colonne.html.removeEventListener("mouseover", survoleNomColonne);
@@ -1118,6 +1175,10 @@ function OxTableau ($conteneur, proprietesUtil) {
 				}
 			}
 			htmlRegroupement.addEventListener("mousemove", deplacer);
+
+			this.getListeGroupes = function () {
+				return listeGroupes;
+			};
 
 			this.creerEvenements = function () {
 				for (let i = 0 ; i < listeColonnes.length ; i++) {
@@ -1310,8 +1371,8 @@ function OxTableau ($conteneur, proprietesUtil) {
 			clearTimeout(delaiDisparition);
 			$conteneur.html(texte);
 			$conteneur.get(0).style.width = '';
-			if ($conteneur.width() > 400)
-				$conteneur.get(0).style.width = "400px";
+			// if ($conteneur.width() > 400)
+			// 	$conteneur.get(0).style.width = "400px";
 			delaiApparition = setTimeout(function(){
 				afficher();
 			}, 500);
